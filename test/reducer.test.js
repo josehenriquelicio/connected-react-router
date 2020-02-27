@@ -123,6 +123,47 @@ describe('connectRouter', () => {
       const nextState = rootReducer(currentState, action)
       expect(nextState).toBe(currentState)
     })
+
+    it('parses search string with URL encoded characters', () => {
+      const rootReducer = combineReducers({
+        router: connectRouter(mockHistory)
+      })
+      const currentState = {
+        router: {
+          location: {
+            pathname: '/',
+            search: '',
+            hash: '',
+          },
+          action: 'POP',
+        },
+      }
+      const action = {
+        type: LOCATION_CHANGE,
+        payload: {
+          location: {
+            pathname: '/path/to/somewhere',
+            search: '?query=test&ru=русский&pt=portugês',
+            hash: '',
+          },
+          action: 'PUSH',
+        }
+      }
+      const nextState = rootReducer(currentState, action)
+
+      const expectedState = {
+        router: {
+          location: {
+            pathname: '/path/to/somewhere',
+            search: '?query=test&ru=русский&pt=portugês',
+            hash: '',
+            query: { query: 'test', ru: 'русский', pt: 'portugês' }
+          },
+          action: 'PUSH',
+        },
+      }
+      expect(nextState).toEqual(expectedState)
+    })
   })
 
   describe('with immutable structure', () => {
